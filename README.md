@@ -1,3 +1,5 @@
+Integration boilerplate of KRPano viewer, krpano bundler and svelte 5 for static web projects
+
 See https://github.com/apushkarev/krpano-bundler on how bundler works
 
 ### Getting started
