@@ -1,0 +1,13 @@
+<krpano>
+  
+  <design bg_color1="0x222222" />
+  <design bg_color2="0x333333" />
+  <design bg_color3="0x444444" />
+  <design bg_alpha="0.5" />
+  <design text_color="bcbcbc" />
+  <design bg_border="1 0xffffff 0.1" />
+  <design padding="8" />
+  <design menu_width="240" />
+  <design menu_item_height="50" />
+  
+</krpano>

@@ -1,0 +1,49 @@
+<krpano>
+  
+  <menu
+
+    create_items="
+      for(set(i, 0), i LT menu_list.count, inc(i),
+
+        calc(menu_list[get(i)].linkedMenuItem, menu_list[get(i)].name + '_item');
+
+        new(Invisible_Content|Menu_Item,
+          get(menu_list[get(i)].linkedMenuItem),
+          get(i)
+        );
+      );
+
+      callwith(layer[menu],
+        set_opened_height(calc( (menu_list.count + 1) * design.padding + menu_list.count * design.menu_item_height) );
+      );
+    "
+
+    is_open="false"
+
+    open="
+      set(menu.is_open, true);
+      callwith(layer[menu], show);
+
+      callwith(layer[menu_button_bar1], set_position_close);
+      callwith(layer[menu_button_bar2], set_position_close);
+      callwith(layer[menu_button_bar3], set_position_close);
+
+      for(set(i, 0), i LT menu_list.count, inc(i),
+        callwith(layer[get(menu_list[get(i)].linkedMenuItem)], show);
+      );
+    "
+    close="
+      set(menu.is_open, false);
+      callwith(layer[menu], hide);
+
+      callwith(layer[menu_button_bar1], set_position_open);
+      callwith(layer[menu_button_bar2], set_position_open);
+      callwith(layer[menu_button_bar3], set_position_open);
+
+      for(set(i, 0), i LT menu_list.count, inc(i),
+        callwith(layer[get(menu_list[get(i)].linkedMenuItem)], hide);
+      );
+    "
+  />
+  
+</krpano>

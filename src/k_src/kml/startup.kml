@@ -1,0 +1,23 @@
+<krpano>
+	
+	<action name="startup0" autorun="preinit">
+	
+		/* Надо для работы тура */
+		
+		/* делает нормальную консоль */
+		if (device.desktop,
+			js( setKRPanoConsole() );
+		);
+
+		/* парсит урл */
+		js( readURL() );
+
+		delayedcall (0.5,
+			callwith(layer[menu_button_background], show);
+		);
+
+		menu.create_items();
+		
+	</action>
+	
+</krpano>

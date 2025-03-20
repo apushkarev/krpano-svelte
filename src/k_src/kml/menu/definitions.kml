@@ -1,0 +1,163 @@
+<krpano>
+  
+  <definition name="menu_button_background" extends="Invisible_Content|Visible" keep="true"
+    type="container" bgcapture="true" 
+
+    align="lefttop"
+
+    x="20" y="20"
+
+    width="42" height="42"
+    bgroundedge="8"
+
+    bgcolor="get:design.bg_color1" bgalpha="get:design.bg_alpha" 
+    bgborder="get:design.bg_border" 
+
+    onover="
+      tween(bgcolor, get(design.bg_color2), 0.1, default);
+    "
+    onout="
+      tween(bgcolor, get(design.bg_color1), 0.1, default);
+    "
+
+    ondown="
+      set(oy, 1);
+    "
+    onup="
+      set(oy, 0);
+    "
+    onclick="
+      delayedcall (get(ui_reaction_delay),
+        onclick_actions();
+      );
+    "
+
+    onover_actions=""
+    onout_actions=""
+    ondown_actions=""
+    onup_ations=""
+
+    onclick_actions="
+      if (menu.is_open,
+        menu.close();
+      ,
+        menu.open(); 
+      );
+    "
+  />
+
+  <definition name="menu_button_bar1" extends="Button_Bar"
+    align="lefttop" edge="left"
+
+    x="10" y="14"
+    width="18"
+
+    set_position_close="
+      tween(rotate, 45, 0.25, default);
+      tween(width, 20, 0.25, default);
+      tween(x, 14, 0.25, default);
+    "
+    set_position_open="
+      tween(rotate, 0, 0.25, default); 
+      tween(width, 18, 0.25, default);
+      tween(x, 10, 0.25, default);
+    "
+  />
+
+  <definition name="menu_button_bar2" extends="Invisible_Content|Visible|Button_Bar"
+    align="lefttop" edge="left"
+
+    x="10" y="21"
+    width="22"
+
+    set_position_close="
+      hide();
+    "
+    set_position_open="
+      show();
+    "
+  />
+
+  <definition name="menu_button_bar3" extends="Button_Bar"
+    align="lefttop" edge="left"
+
+    x="10" y="28"
+    width="14"
+
+    set_position_close="
+      tween(rotate, -45, 0.25, default);
+      tween(width, 20, 0.25, default);
+      tween(x, 14, 0.25, default);
+    "
+    set_position_open="
+      tween(rotate, 0, 0.25, default); 
+      tween(width, 14, 0.25, default);
+      tween(x, 10, 0.25, default);
+    "
+  />
+
+
+  <definition name="menu_button_touch_area"
+    type="container" bgcapture="true"
+
+    align="center"
+
+    width="100%" height="100%"
+
+    onover="
+      callwith(layer[menu_button_background], onover_actions);
+    "
+    onout="
+      callwith(layer[menu_button_background], onout_actions); 
+    "
+
+    ondown="
+      callwith(layer[menu_button_background], ondown_actions); 
+    "
+    onup="
+      callwith(layer[menu_button_background], onup_ations);  
+    "
+    onclick="
+      delayedcall (get(ui_reaction_delay),
+        onclick_actions();
+      );
+    "
+
+    onclick_actions="
+      if (menu.is_open,
+        menu.close();
+      ,
+        menu.open(); 
+      );
+    "
+  />
+
+  <definition name="menu" extends="Invisible_Content" keep="true"
+    type="container"
+
+    align="lefttop"
+    y="20" x="82"
+
+    width="get:design.menu_width" height="100"
+    bgroundedge="8"
+
+    bgcolor="get:design.bg_color1" bgalpha="get:design.bg_alpha" 
+    bgborder="get:design.bg_border" 
+
+    height_open="0"
+    hide_delay="0.125"
+
+    set_opened_height="
+      set(height_open, %1);
+      calc(height, %1 / 2);
+    "
+
+    show_before="
+      tween(height, get(height_open), 0.25, default);
+    "
+    hide_before="
+      tween(height, calc(height_open / 2), 0.25, default);
+    "
+  />
+  
+</krpano>

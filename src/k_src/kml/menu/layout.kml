@@ -1,0 +1,12 @@
+<krpano>
+  
+  <layer name="menu_button_background" definition="menu_button_background">
+    <layer name="menu_button_bar1" definition="menu_button_bar1"/>    
+    <layer name="menu_button_bar2" definition="menu_button_bar2"/>    
+    <layer name="menu_button_bar3" definition="menu_button_bar3"/>    
+    <layer name="menu_button_touch_area" definition="menu_button_touch_area"/>
+  </layer>  
+
+  <layer name="menu" definition="menu"/>
+  
+</krpano>

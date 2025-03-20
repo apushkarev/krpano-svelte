@@ -1,0 +1,21 @@
+<krpano
+	ui_reaction_delay="0.1"
+>
+	
+	<action name="extend_krpano" type="Javascript" autorun="preinit"><![CDATA[
+
+		/* krpano.inlinefunctions.hyphenate = function(str) {
+			return hyphenate(str);
+		};
+
+		krpano.inlinefunctions.getrandomint = function(min, max) {
+			return getRandomInt(min, max);
+		};
+
+		krpano.inlinefunctions.elemexists = (e) => document.getElementById(e) != null;
+
+		krpano.inlinefunctions.exists = (e) => e != null;		 */
+
+	]]></action>
+	
+</krpano>

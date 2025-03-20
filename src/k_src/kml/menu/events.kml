@@ -1,0 +1,13 @@
+<krpano>
+  
+  <events name="menu_events" keep="true"
+    
+    onclick="
+      if (menu.is_open,
+        menu.close();
+      );
+    "
+  
+  />
+  
+</krpano>

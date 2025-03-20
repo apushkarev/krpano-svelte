@@ -1,0 +1,17 @@
+﻿<krpano title="Virtual Tour">
+
+	<include url="calc:'k_app/app.xml' + embeddingsettings.initvars._timestamp"/>
+	<include url="menu_settings.xml%$_timestamp%" />
+	<include url="tour_settings.xml%$_timestamp%" />
+
+	<preview type="grid(CUBE,16,16,512,0x333333,0x121314,0x000000);" />
+
+	<action name="" autorun="onstart" type="javascript"><![CDATA[
+
+		window.krpano = krpano;
+
+		krpano.view.fov = 70;
+
+  ]]></action>
+	
+</krpano>
