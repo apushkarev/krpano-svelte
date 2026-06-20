@@ -19,59 +19,7 @@
     
   ]]></action>
 
-  <action name="" type="javascript" autorun="preinit"><![CDATA[
-  
-    window.krpano = krpano;
-
-    window._k = {
-
-      a: () => krpano.actions,
-
-      dgic: dName => krpano.data.getItem(dName).content,
-      dgi: dName => krpano.data.getItem(dName),
-      lgi: lName => krpano.layer.getItem(lName),
-      lga: () => krpano.layer.getArray(),
-      pgi: pName => krpano.plugin.getItem(pName),
-
-      hgi: hName => krpano.hotspot.getItem(hName),
-      hga: () => krpano.hotspot && krpano.hotspot.getArray(),
-
-      sgi: sName => krpano.scene.getItem(sName),
-      sga: () => krpano.scene && krpano.scene.getArray(),
-
-      g: statement => krpano.get(statement),
-
-      xs: () => krpano.xml.scene,
-
-      sxs: () => krpano.scene.getItem(krpano.xml.scene),
-
-      c: statement => krpano.call(statement),
-
-      cwl: (lName, actions) => krpano.call(`callwith(layer[${lName}], ${actions})`),
-
-      cwh: (hName, actions) => krpano.call(`callwith(hotspot[${lName}], ${action})`),
-
-      i: () => krpano.inlinefunctions,
-
-      s: () => krpano.settings,
-
-      esi: () => krpano.embeddingsettings.initvars,
-      esil: () => krpano.embeddingsettings.initvars._location,
-
-      vh: () => parseFloat(krpano.view.hlookat),
-      vv: () => parseFloat(krpano.view.vlookat),
-      vf: () => parseFloat(krpano.view.fov),
-      hfov: () => parseFloat(krpano.view.hfov),
-      vfov: () => parseFloat(krpano.view.vfov),
-
-      sl: () => krpano.actions.showlog(),
-
-      isTrue: value => (typeof(value) == 'string' && value == 'true') || (typeof(value) == 'boolean' && value)
-    };
-    
-    krpano.globals.set('_k', window._k);
-
-  ]]></action>
+  <!-- window.krpano / window._k bootstrap moved to __init.kml (single preinit) -->
 
   <action name="remove_array">
 
@@ -272,6 +220,14 @@
     }
     
     krpano.call(`style[${constructorClass}].${constructorClass}(${name}, ${className}, ${params.join(', ')});`);
+
+  ]]></action>
+
+  <action name="invoke" type="javascript"><![CDATA[
+
+    const [f, funcName, ...params] = args;
+
+    _k[funcName].apply(_k, args.slice(2));
 
   ]]></action>
 

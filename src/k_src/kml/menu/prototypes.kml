@@ -25,6 +25,7 @@
     linked_menu_list_item=""
 
     Menu_Item="
+
       newlayer(%1, %2);
 
       set(this.linked_menu_list_item, %3);
@@ -35,7 +36,7 @@
     "
 
     onloaded="
-      js( setMenuItemCSS(get(name)) );
+      invoke('setMenuItemCSS', get(name));
     "
 
     onover="
@@ -64,22 +65,21 @@
     "
   />
 
-  <action name="" type="javascript" autorun="preinit"><![CDATA[
   
-    window.setMenuItemCSS = lName => {
+  <action name="Menu_Item_JS" type="javascript" init_run_before_start="true"><![CDATA[
 
-      const layer = krpano.layer.getItem(lName);
+    _k.setMenuItemCSS = (lName) => {
 
-      layer.css = `
-        color: #${krpano.get(`design.text_color`)};
+      _k.lgi(lName).css = `
+        color: #${_k.design.text_color};
         font-family: Open Sans;
         font-size: 20px;
         font-weight: 300;
-        line-height: ${+krpano.get(`design.menu_item_height`) - 6}px;
-        padding-left: ${krpano.get(`design.padding`)}px;
+        line-height: ${parseFloat(_k.design.menu_item_height) - 6}px;
+        padding-left: ${_k.design.padding}px;
       `;
-    };
-    
+    }
+  
   ]]></action>
   
 </krpano>

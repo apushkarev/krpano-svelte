@@ -1,0 +1,236 @@
+<krpano>
+
+  <!--
+    __init.kml is the hardcoded bootstrap. The bundler keeps it as the root of
+    app.xml and fills the @@..._B64@@ placeholders with base64 payloads.
+    This is the ONLY preinit action in the whole app.
+    Everything else (core engine KML, helper JS, CSS, and in production the
+    Svelte bundle) rides inside the data blocks below.
+  -->
+
+  <load_order name="item_0" ref="tour_settings.xml"/>
+  <load_order name="item_1" ref="menu_settings.xml"/>
+
+  <action name="" type="javascript" autorun="preinit"><![CDATA[
+
+    /* ---- 1. internal krpano alias (named _k, never exposed to window in production) ---- */
+
+    const _k = krpano;
+
+    /* ---- 2. low-level helpers (base64 utf-8 decode, css + global-js inject) ---- */
+
+    const _b64decode = b64 => {
+
+      if (!b64) return '';
+
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      return new TextDecoder('utf-8').decode(bytes);
+    };
+
+    const _injectCSS = css => {
+
+      if (!css) return;
+
+      const styleTag = document.createElement('style');
+
+      styleTag.textContent = css;
+      document.head.appendChild(styleTag);
+    };
+
+    const _runGlobalJS = code => {
+
+      if (!code) return;
+
+      const scriptTag = document.createElement('script');
+
+      scriptTag.textContent = code;
+      document.head.appendChild(scriptTag);
+    };
+
+    /* ---- 3. helper methods attached directly onto the _k alias (the krpano object) ---- */
+
+    _k.a = () => _k.actions;
+
+    _k.dgic = dName => _k.data.getItem(dName).content;
+    _k.dgi = dName => _k.data.getItem(dName);
+    _k.lgi = lName => _k.layer.getItem(lName);
+    _k.lga = () => _k.layer.getArray();
+    _k.pgi = pName => _k.plugin.getItem(pName);
+
+    _k.hgi = hName => _k.hotspot.getItem(hName);
+    _k.hga = () => _k.hotspot && _k.hotspot.getArray();
+
+    _k.sgi = sName => _k.scene.getItem(sName);
+    _k.sga = () => _k.scene && _k.scene.getArray();
+
+    _k.g = statement => _k.get(statement);
+
+    _k.xs = () => _k.xml.scene;
+    _k.sxs = () => _k.scene.getItem(_k.xml.scene);
+
+    _k.c = statement => _k.call(statement);
+
+    _k.cwl = (lName, actions) => _k.call(`callwith(layer[${lName}], ${actions})`);
+
+    _k.i = () => _k.inlinefunctions;
+    _k.s = () => _k.settings;
+
+    _k.vh = () => parseFloat(_k.view.hlookat);
+    _k.vv = () => parseFloat(_k.view.vlookat);
+    _k.vf = () => parseFloat(_k.view.fov);
+    _k.hfov = () => parseFloat(_k.view.hfov);
+    _k.vfov = () => parseFloat(_k.view.vfov);
+
+    _k.sl = () => _k.actions.showlog();
+
+    _k.isTrue = value => (typeof value == 'string' && value == 'true') || (typeof value == 'boolean' && value);
+
+    /* single chokepoint to call any _k-scoped function from KML expressions:
+       calc(_, call_js('fnName', get(a), get(b))); */
+    _k.inlinefunctions.call_js = function(name) {
+      return _k[name].apply(_k, [].slice.call(arguments, 1));
+    };
+
+    /* ---- 4. runtime globals (no initvars) ---- */
+
+    const documentURL = new URL(location);
+
+    const tourName = documentURL.searchParams.get('tour');
+    const remoteFolder = documentURL.searchParams.get('folder');
+
+    const tourFolder = remoteFolder ? remoteFolder : `${location.origin}/tours`;
+    const timestamp = '?t=' + Math.round(Date.now() / 1000).toString(36);
+
+    _k.set('_location', `${tourFolder}/${tourName}/`);
+    _k.set('_timestamp', timestamp);
+    _k.set('_devmode', documentURL.searchParams.get('devmode') === '');
+    _k.set('tourTitle', tourName);
+
+    /* ---- 5. decode payloads ---- */
+
+    const appJS = _b64decode(_k.dgic('_APPJS'));
+    const styles = _b64decode(_k.dgic('_STYLES'));
+    const coreXML = _b64decode(_k.dgic('_CORE'));
+
+    const svelteJS = _b64decode(_k.dgic('_SVELTE_JS'));
+    const svelteCSS = _b64decode(_k.dgic('_SVELTE_CSS'));
+
+    const isProd = svelteJS.length > 0;
+
+    /* ---- 6. xml + svelte boot helpers ---- */
+
+    const wait = async dt => {
+      await new Promise(resolve => setTimeout(() => resolve(true), dt));
+    }
+
+    const includeXMLString = async xml => {
+
+      if (!xml) return;
+
+      _k.set('_tmpxml', xml);
+      _k.c('includexmlstring(get(_tmpxml)); delete(_tmpxml);');
+
+      await wait(50);
+    };
+
+    const fetchText = async url => {
+
+      const response = await fetch(url);
+
+      return response.text();
+    };
+
+    const bootSvelte = () => {
+
+      const krpanoEl = document.getElementById('krpanoSWFObject');
+
+      const appEl = document.createElement('div');
+      appEl.id = 'app';
+      krpanoEl.appendChild(appEl);
+
+      if (isProd) {
+
+        /* production: Svelte rides inside app.xml, executed with the internal
+           reference + mount element passed as arguments (no window channel) */
+        _injectCSS(svelteCSS);
+
+        const runApp = new Function('krpano', 'mountEl', svelteJS);
+        runApp(_k, appEl);
+
+      } else {
+
+        /* dev: Vite-served src/main.js is waiting for this handoff */
+        window.__APP_MOUNT = appEl;
+
+        if (typeof window.__bootApp == 'function') {
+          window.__bootApp(appEl);
+        }
+      }
+    };
+
+    /* ---- 7. ordered boot: project config -> core -> svelte -> startup -> tour ---- */
+
+    (async () => {
+
+      /* 7a. project config (load_order array) BEFORE the core, in order, so core
+            code can read design / menu settings at parse and creation time */
+      const loadOrder = _k.load_order.getArray().map(item => item.ref);
+
+      for (let ref of loadOrder) {
+        await includeXMLString(await fetchText(`${tourFolder}/${tourName}/${ref}${timestamp}`));
+      }
+
+      /* 7b. core: helper JS, CSS, engine KML */
+      _runGlobalJS(appJS);
+      _injectCSS(styles);
+      await includeXMLString(coreXML);
+
+      /* 7c. dev debug mirror (production keeps everything off window) */
+      if (!isProd) {
+        window.krpano = _k;
+        window._k = _k;
+      }
+
+      /* 7d. krpano-first Svelte boot */
+      bootSvelte();
+
+      /* 7e. tour startup (config + core are ready) */
+      
+      /* _k.c(' js( console.log(calc(action[startup0].content)); ); if(isset(startup0), startup0());'); */
+
+      /* 7f. load the tour content (scenes / preview) on top */
+      _k._toururl = `${tourFolder}/${tourName}/tour.xml${timestamp}`
+      _k.c('loadpano(get(_toururl)); delete(_toururl);');
+
+      _k.action.getArray()
+      .filter(action => _k.isTrue(action.init_run_before_start))
+      .map(action => action.name)
+      .forEach(action => {
+        _k.c(`${action}(_k)`);
+      });
+
+      await wait(50);
+
+      _k.c('startup0()');
+
+    })();
+
+  ]]></action>
+
+  <data name="_CORE"><![CDATA[@@CORE_B64@@]]></data>
+
+  <data name="_APPJS"><![CDATA[@@APPJS_B64@@]]></data>
+
+  <data name="_STYLES"><![CDATA[@@STYLES_B64@@]]></data>
+
+  <data name="_SVELTE_JS"><![CDATA[@@SVELTE_JS_B64@@]]></data>
+
+  <data name="_SVELTE_CSS"><![CDATA[@@SVELTE_CSS_B64@@]]></data>
+
+</krpano>

@@ -8,7 +8,7 @@ function loadCSSFile(filename) {
 }
 
 async function loadJSFile(path) {
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     const script = document.createElement("script")
     script.src = path
     document.body.appendChild(script)
@@ -17,39 +17,31 @@ async function loadJSFile(path) {
   })
 }
 
+// dev-only: rebuild krpano sources (app.xml) before embedding.
+// /api/build is served by the Vite dev plugin (same origin).
+async function buildSources() {
+  return fetch('/api/build', { method: 'GET' })
+}
+
 async function loadTour() {
 
-  return new Promise( async (resolve, reject) => {
+  const documentURL = new URL(location)
 
-    const timestamp = Math.round(Date.now() / 1000).toString(36)
-    const documentURL = new URL(location)
+  if (documentURL.searchParams.get('build') === '') {
+    await buildSources()
+  }
 
-    const tourName = documentURL.searchParams.get('tour')
-    const remoteFolder = documentURL.searchParams.get('folder')
+  await loadJSFile(`k_app/tour.js?t=${Date.now()}`)
 
-    const tourFolder = remoteFolder ? remoteFolder : `${location.origin}/tours`
-    const xmlFolder = remoteFolder ? `${remoteFolder}` : `tours`
-  
-    const isAmazon = remoteFolder ? remoteFolder.indexOf('amazon') != -1 : false
-  
-    await loadJSFile(`k_app/tour.js?t=${Date.now()}`)
-    await loadJSFile(`k_app/js/app.js?t=${Date.now()}`)
-    await loadCSSFile(`k_app/app.css?t=${Date.now()}`)
-  
-    embedpano({
-      xml: `${xmlFolder}/${tourName}/tour.xml?t=${timestamp}`,
-      target: "pano",
-      html5: "only",
-      bgcolor : '#ffffff', 
-      initvars: {
-        _location : `${tourFolder}/${tourName}/`,
-        _timestamp: '?t=' + timestamp,
-        _devmode: documentURL.searchParams.get("devmode") == '',
-        tourTitle: tourName,
-        _is_amazon_: isAmazon,
-        loadCallback: () => setTimeout(() => resolve(true), 100)
-      },
-      passQueryParameters: true,
-    })
+  // krpano-first: the startup xml is the protected core (app.xml), NOT the tour.
+  // No initvars, no external query params, no #app reparent callback.
+  // krpano's __init preinit sets globals, loads the core + helpers + css, boots
+  // Svelte, then loads the selected tour.xml (settings/scenes) on top.
+  embedpano({
+    xml: `k_app/app.xml?t=${Date.now()}`,
+    target: "pano",
+    html5: "only",
+    bgcolor: '#000',
+    passQueryParameters: true
   })
 }

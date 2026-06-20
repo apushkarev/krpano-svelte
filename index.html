@@ -10,22 +10,27 @@
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
 
     <style>
-      html { height:100%;}
-      body { height:100%; overflow:hidden; margin:0; padding:0; background-color: #333333;}
+      html { height:100%; }
+      body { height:100%; overflow:hidden; margin:0; padding:0; background-color: #333333; }
+      #pano { width:100%; height:100%; }
     </style>
 
     <script type="text/javascript" src="k_app/js/tour_loader.js"></script>
     <script type="text/javascript" src="js/bundler/xml2json.min.js"></script>
     <script type="text/javascript" src="js/bundler/vkbeautify.js"></script>
+    <link rel="stylesheet" href="fonts.css" />
   </head>
   <body>
 
-  <div id="wrapper">
+    <!-- krpano-first: only the pano container. krpano's __init preinit creates
+         #app inside #krpanoSWFObject and boots Svelte into it. -->
     <div id="pano"></div>
-    <div id="app"></div>
-  </div>
 
-  <script type="module" src="src/main.js"></script>
+    <script type="module" src="/src/main.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => loadTour());
+    </script>
 
   </body>
 </html>

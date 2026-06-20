@@ -1,16 +1,18 @@
-<krpano>
+<krpano
+	debugjsactions="true"
+>
 	
-	<action name="startup0" autorun="preinit">
+	<action name="startup0" init_run_before_start="false">
 	
 		/* Надо для работы тура */
 		
 		/* делает нормальную консоль */
 		if (device.desktop,
-			js( setKRPanoConsole() );
+			invoke('setKRPanoConsole');
 		);
 
 		/* парсит урл */
-		js( readURL() );
+		invoke('readURL');
 
 		delayedcall (0.5,
 			callwith(layer[menu_button_background], show);

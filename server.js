@@ -7,6 +7,7 @@ import X2JS from 'x2js';
 import { DOMParser } from 'xmldom';
 import cors from 'cors';
 import { getDestinationFolder, directoryExists} from './server_lib/helpers.js'
+import { buildAppXml } from './server_lib/bundler.js'
 
 const app = express();
 
@@ -55,9 +56,7 @@ app.get('/api/build', async (req, res) => {
 
   const t0 = performance.now();
 
-  await mergeKRPanoSources(getFilesRecursive('src/k_src/kml'), 'public/k_app/app.xml')
-  await mergeFiles(getFilesRecursive('src/k_src/js'), 'public/k_app/js/app.js')
-  await mergeFiles(getFilesRecursive('src/k_src/css'), 'public/k_app/app.css')
+  await buildAppXml()
 
   console.log(`BUILD TOTAL TIME ${Math.round(performance.now() - t0)}ms`)
 

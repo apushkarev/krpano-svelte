@@ -3,6 +3,7 @@
   <menu
 
     create_items="
+
       for(set(i, 0), i LT menu_list.count, inc(i),
 
         calc(menu_list[get(i)].linkedMenuItem, menu_list[get(i)].name + '_item');
