@@ -18,3 +18,15 @@ function getCookie(name) {
   }
   return null;
 }
+
+function dumbMax(...args) {
+  const hName = args[0];
+    
+  const widthArray = args.slice(1);
+
+  for (let i = 0; i < widthArray.length; i++) {
+    widthArray[i] = +widthArray[i];
+  }
+
+  krpano.set(`hotspot[${hName}].max_width`, Math.max(...widthArray));
+}

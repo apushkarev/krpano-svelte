@@ -27,6 +27,8 @@
 
       a: () => krpano.actions,
 
+      dgic: dName => krpano.data.getItem(dName).content,
+      dgi: dName => krpano.data.getItem(dName),
       lgi: lName => krpano.layer.getItem(lName),
       lga: () => krpano.layer.getArray(),
       pgi: pName => krpano.plugin.getItem(pName),
@@ -65,7 +67,9 @@
       sl: () => krpano.actions.showlog(),
 
       isTrue: value => (typeof(value) == 'string' && value == 'true') || (typeof(value) == 'boolean' && value)
-    }
+    };
+    
+    krpano.globals.set('_k', window._k);
 
   ]]></action>
 
@@ -241,6 +245,10 @@
 
   <style name="Visible"
     visible="true" alpha="1"
+
+    onloaded.addevent="
+      copy(alpha, target_alpha);
+    "
   />  
 
   <action name="new" type="javascript"><![CDATA[

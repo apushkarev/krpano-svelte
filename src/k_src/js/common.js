@@ -1,3 +1,4 @@
+// @ts-nocheck
 function setKRPanoConsole() {
 
   const krpanoDOMObject = document.getElementById('krpanoSWFObject');
@@ -19,15 +20,8 @@ const roundVal = (value, decimals) => {
 
 function readURL() {
 	const documentURL = new URL(window.location);
-	const devmode = documentURL.searchParams.get("devmode");
-
+	
   krpano.is_bundler = location.href.indexOf('_dev') != -1;
-
-	if (devmode == '') {
-		krpano.set('devmode', true);
-		krpano.set('logkey', true);
-		krpano.set('showerrors', true);
-	}
 }
 
 function loadjscssfile(filename, filetype, onload) {
@@ -86,16 +80,26 @@ function setPageRatio(ratio) {
   const stageAspect = document.body.offsetWidth / document.body.offsetHeight;
 
   if (stageAspect > ratio) {
-    pano.style.height = `100%`;
-    pano.style.width = `${document.body.offsetHeight * ratio / document.body.offsetWidth * 100}%`;
-    pano.style.marginLeft = `${(document.body.offsetWidth - document.body.offsetHeight * ratio) / 2 / document.body.offsetWidth * 100}%`;
-    pano.style.marginTop = 0;
+    panoFrame.style.height = `100%`;
+    panoFrame.style.width = `${document.body.offsetHeight * ratio / document.body.offsetWidth * 100}%`;
+    panoFrame.style.left = `${(document.body.offsetWidth - document.body.offsetHeight * ratio) / 2 / document.body.offsetWidth * 100}%`;
+    panoFrame.style.top = 0;
   } else {
-    pano.style.width = `100%`;
-    pano.style.height = `${document.body.offsetWidth / ratio / document.body.offsetHeight * 100}%`;
-    pano.style.marginTop = `${(document.body.offsetHeight - document.body.offsetWidth / ratio) / 2 / document.body.offsetHeight / ratio * 100}%`;
-    pano.style.marginLeft = 0;
+    panoFrame.style.width = `100%`;
+    panoFrame.style.height = `${document.body.offsetWidth / ratio / document.body.offsetHeight * 100}%`;
+    panoFrame.style.top = `${(document.body.offsetHeight - document.body.offsetWidth / ratio) / document.body.offsetHeight / ratio * 100}%`;
+    panoFrame.style.left = 0;
   }
+}
+
+function resetPageRatio() {
+
+  const panoFrame = document.getElementById('pano');
+  
+  panoFrame.style.height = null;
+  panoFrame.style.width = null;
+  panoFrame.style.left = null;
+  panoFrame.style.top = null;
 }
 
 
@@ -214,3 +218,21 @@ const slowCallwhen = (condition, callback) => {
   return intervalId
 }
 
+window.convertHexColorToKrpano = hex => {
+  return '0x' + hex.slice(1)
+};
+
+/**
+ * Converts hex color value and alpha to rgb format
+ * @param {string} hex - hex color value
+ * @param {number} alpha - alpha value
+ * @returns {string} rgb(154 0 23 / 0.85)
+*/
+const hexAToRgb = (hex, alpha) => {
+
+  if (!hex || !alpha) return;
+  
+  const rgb = hexToRgb(hex);
+
+  return `rgb(${rgb.r} ${rgb.g} ${rgb.b} / ${alpha})`
+}
