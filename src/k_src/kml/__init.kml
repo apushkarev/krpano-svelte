@@ -17,6 +17,26 @@
 
     const _k = krpano;
 
+    const kDom = document.getElementById('krpanoSWFObject');
+
+    delete kDom.set;
+    delete kDom.get;
+    delete kDom.call;
+
+    const slowCallwhen = (condition, callback) => {
+
+      const intervalId = setInterval(async () => {
+
+        if (await condition()) {
+
+          clearInterval(intervalId);
+          await callback();
+        }
+      }, 50);
+
+      return intervalId;
+    };
+
     /* ---- 2. low-level helpers (base64 utf-8 decode, css + global-js inject) ---- */
 
     const _b64decode = b64 => {
@@ -53,6 +73,37 @@
       document.head.appendChild(scriptTag);
     };
 
+    const wait = async dt => {
+      await new Promise(resolve => setTimeout(() => resolve(true), dt));
+    }
+
+    const includeXMLString = async xml => {
+
+      if (!xml) return;
+
+      _k.set('_tmpxml', xml);
+      _k.c('includexmlstring(get(_tmpxml)); delete(_tmpxml);');
+
+      await wait(50);
+    };
+
+    const loadPanoXMLString = async xml => {
+
+      if (!xml) return;
+
+      _k.set('_tmpxml', xml);
+      _k.c('loadxml(get(_tmpxml)); delete(_tmpxml);');    
+
+      await wait(50);
+    };
+
+    const fetchText = async url => {
+
+      const response = await fetch(url);
+
+      return response.text();
+    };
+
     /* ---- 3. helper methods attached directly onto the _k alias (the krpano object) ---- */
 
     _k.a = () => _k.actions;
@@ -77,6 +128,7 @@
     _k.c = statement => _k.call(statement);
 
     _k.cwl = (lName, actions) => _k.call(`callwith(layer[${lName}], ${actions})`);
+    _k.cwh = (hName, actions) => _k.call(`callwith(hotspot[${hName}], ${actions})`);
 
     _k.i = () => _k.inlinefunctions;
     _k.s = () => _k.settings;
@@ -90,12 +142,6 @@
     _k.sl = () => _k.actions.showlog();
 
     _k.isTrue = value => (typeof value == 'string' && value == 'true') || (typeof value == 'boolean' && value);
-
-    /* single chokepoint to call any _k-scoped function from KML expressions:
-       calc(_, call_js('fnName', get(a), get(b))); */
-    _k.inlinefunctions.call_js = function(name) {
-      return _k[name].apply(_k, [].slice.call(arguments, 1));
-    };
 
     /* ---- 4. runtime globals (no initvars) ---- */
 
@@ -124,27 +170,6 @@
     const isProd = svelteJS.length > 0;
 
     /* ---- 6. xml + svelte boot helpers ---- */
-
-    const wait = async dt => {
-      await new Promise(resolve => setTimeout(() => resolve(true), dt));
-    }
-
-    const includeXMLString = async xml => {
-
-      if (!xml) return;
-
-      _k.set('_tmpxml', xml);
-      _k.c('includexmlstring(get(_tmpxml)); delete(_tmpxml);');
-
-      await wait(50);
-    };
-
-    const fetchText = async url => {
-
-      const response = await fetch(url);
-
-      return response.text();
-    };
 
     const bootSvelte = () => {
 

@@ -27,7 +27,7 @@ async function loadTour() {
 
   const documentURL = new URL(location)
 
-  if (documentURL.searchParams.get('build') === '') {
+  if (location.port.indexOf('517') != -1) {
     await buildSources()
   }
 
