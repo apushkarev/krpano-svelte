@@ -11,7 +11,6 @@
   -->
 
   <load_order name="item_0" ref="tour_settings.xml"/>
-  <load_order name="item_1" ref="menu_settings.xml"/>
 
   <action name="" type="javascript" autorun="preinit"><![CDATA[
 
@@ -233,10 +232,10 @@
         if (scene.thumburl) {
 
           scene.thumburl = scene.thumburl
-            .replaceAll('k_app/', _k._location);
+            .replaceAll('core/k_app/', _k._location);
         }
 
-        if (scene.content) scene.content =  scene.content.replaceAll('k_app/', _k._location);
+        if (scene.content) scene.content =  scene.content.replaceAll('core/k_app/', _k._location);
       });
     };
 

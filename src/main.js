@@ -1,7 +1,7 @@
 import { mount } from 'svelte'
 import './app.css'
 import App from './App.svelte'
-import { globals } from './+stores.svelte'
+import { globals } from './_globals.svelte'
 
 let app = null
 

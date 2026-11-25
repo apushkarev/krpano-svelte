@@ -3,7 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
-import { buildAppXml } from './server_lib/bundler.js'
+import { buildAppXml } from './server_lib/helpers.js'
 
 // dev: rebuild krpano sources (app.xml) on the ?build query, no separate server
 const krpanoDevAPI = () => ({
@@ -68,35 +68,50 @@ const prodIndexHtml = () => {
 
 // build: after Vite emits the Svelte bundle, embed it into dist/k_app/app.xml,
 // drop the standalone bundle files, and write a krpano-first index.html.
-const krpanoEmbedBuild = () => ({
+const krpanoEmbedBuild = () => {
 
-  name: 'krpano-embed-build',
-  apply: 'build',
-  enforce: 'post',
+  let outDir = 'dist';
 
-  async closeBundle() {
+  return ({
 
-    const outDir = 'dist'
+    name: 'krpano-embed-build',
+    apply: 'build',
+    enforce: 'post',
 
-    const svelteJsPath = path.join(outDir, 'assets', 'index.js')
-    const svelteCssPath = path.join(outDir, 'assets', 'index.css')
+    configResolved(config) {
+      // Respect isolated Windows staging while preserving the default macOS dist build.
+      outDir = path.relative(config.root, path.resolve(config.root, config.build.outDir));
+    },
 
-    fs.mkdirSync(path.join(outDir, 'k_app'), { recursive: true })
+    async closeBundle() {
 
-    const result = await buildAppXml({
-      svelteJsPath,
-      svelteCssPath,
-      outPath: path.join(outDir, 'k_app', 'app.xml')
-    })
+      const svelteJsPath = path.join(outDir, 'assets', 'index.js');
+      const svelteCssPath = path.join(outDir, 'assets', 'index.css');
 
-    if (fs.existsSync(svelteJsPath)) fs.rmSync(svelteJsPath)
-    if (fs.existsSync(svelteCssPath)) fs.rmSync(svelteCssPath)
+      fs.mkdirSync(path.join(outDir, 'core', 'k_app'), { recursive: true });
 
-    fs.writeFileSync(path.join(outDir, 'index.html'), prodIndexHtml())
+      const result = await buildAppXml({
+        svelteJsPath,
+        svelteCssPath,
+        outPath: path.join(outDir, 'core', 'k_app', 'app.xml')
+      });
 
-    console.log(chalk.greenBright('embedded Svelte bundle into dist/k_app/app.xml'), result.sizes)
-  }
-})
+      // remove anything that would expose app code in the clear
+      [
+        svelteJsPath,
+        svelteCssPath,
+        path.join(outDir, 'core', 'k_app', 'app.js'),
+        path.join(outDir, 'core', 'k_app', 'app.css')
+      ].forEach(file => { if (fs.existsSync(file)) fs.rmSync(file); });
+
+      fs.rmdir(path.join(outDir, 'assets'), () => { console.log('empty assets folder removed'); });
+
+      fs.writeFileSync(path.join(outDir, 'index.html'), prodIndexHtml());
+
+      console.log(chalk.greenBright('embedded Svelte bundle into dist/k_app/app.xml'), result.sizes);
+    }
+  });
+};
 
 // https://vite.dev/config/
 export default defineConfig({

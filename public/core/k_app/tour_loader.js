@@ -31,14 +31,14 @@ async function loadTour() {
     await buildSources()
   }
 
-  await loadJSFile(`k_app/tour.js?t=${Date.now()}`)
+  await loadJSFile(`core/k_app/tour.js?t=${Date.now()}`)
 
   // krpano-first: the startup xml is the protected core (app.xml), NOT the tour.
   // No initvars, no external query params, no #app reparent callback.
   // krpano's __init preinit sets globals, loads the core + helpers + css, boots
   // Svelte, then loads the selected tour.xml (settings/scenes) on top.
   embedpano({
-    xml: `k_app/app.xml?t=${Date.now()}`,
+    xml: `core/k_app/app.xml?t=${Date.now()}`,
     target: "pano",
     html5: "only",
     bgcolor: '#000',

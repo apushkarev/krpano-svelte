@@ -1,11 +1,21 @@
+// @ts-nocheck
+
 let globalStorage = $state({
 
-  krpanoLoaded: false
-})
+  version: '0.0.1 (2026.11.24)',
+
+  _k: undefined,
+
+  krpanoLoaded: false,
+});
 
 function getGlobals() {
 
-  async function update(item, handler) {
+  function update(item, handler) {
+    globalStorage[item] = handler(globalStorage[item])
+  }
+
+  async function updateAsync(item, handler) {
     globalStorage[item] = await handler(globalStorage[item])
   }
 
@@ -23,7 +33,7 @@ function getGlobals() {
       globalStorage[item] = value
     },
 
-    update, updateDry
+    update, updateAsync, updateDry
   }
 }
 
