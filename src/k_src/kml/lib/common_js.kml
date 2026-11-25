@@ -41,18 +41,6 @@
 			return null;
 		};
 
-		_k.dumbMax = (...args) => {
-			const hName = args[0];
-				
-			const widthArray = args.slice(1);
-
-			for (let i = 0; i < widthArray.length; i++) {
-				widthArray[i] = +widthArray[i];
-			}
-
-			krpano.set(`hotspot[${hName}].max_width`, Math.max(...widthArray));
-		};
-
 		_k.setKRPanoConsole = () => {
 
   		const krpanoDOMObject = document.getElementById('krpanoSWFObject');
@@ -220,6 +208,10 @@
 			document.body.removeChild(el);
 		};
 
+		_k.uiTimeout = (callback) => {
+			setTimeout(() => callback(), 75);
+		};
+
 		_k.getAngularDistance = (pointA, pointB) => {
 			const a = ((pointA % 360) + 360) % 360; /* calculate the angular value of pointA modulo 360 degrees */
 			const b = ((pointB % 360) + 360) % 360; /* calculate the angular value of pointB modulo 360 degrees */
@@ -229,6 +221,7 @@
 
 			return Math.abs(Math.min(clockwiseDistance, counterclockwiseDistance)); /* return the absolute value of the smaller of the two distances */
 		};
+		
 
 		_k.normalizeAngle360 = (angle) => {
 			return ((angle % 360) + 360) % 360;

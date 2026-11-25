@@ -1,0 +1,20 @@
+<krpano>
+
+  <action name="init_scene_management_functions" type="javascript" init_run_before_start="true"><![CDATA[
+  
+    _k.loadScene = (sceneName) => {
+			_k.c(`load_scene('${sceneName}')`);
+		};
+  
+  ]]></action>
+
+  <action name="load_scene">
+
+		/*
+      %1 - scene name or index
+    */
+    loadscene(%1, null, MERGE, BLEND(0.35));
+	
+	</action>
+
+</krpano>

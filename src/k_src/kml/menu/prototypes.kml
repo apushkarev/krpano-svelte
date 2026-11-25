@@ -60,7 +60,7 @@
     onclick_actions="
       menu.close();
       delayedcall (1,
-        console.msg('Происходят другие действия');
+        console.msg('Actions happen');
       );
     "
   />

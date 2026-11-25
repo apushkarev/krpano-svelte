@@ -1,4 +1,6 @@
-<krpano>
+<krpano
+  ui_init_complete="false"
+>
 
   <!--
     __init.kml is the hardcoded bootstrap. The bundler keeps it as the root of
@@ -17,6 +19,8 @@
 
     const _k = krpano;
 
+
+    /* delete access to krpano data and methods from dom tree */
     const kDom = document.getElementById('krpanoSWFObject');
 
     delete kDom.set;
@@ -130,9 +134,6 @@
     _k.cwl = (lName, actions) => _k.call(`callwith(layer[${lName}], ${actions})`);
     _k.cwh = (hName, actions) => _k.call(`callwith(hotspot[${hName}], ${actions})`);
 
-    _k.i = () => _k.inlinefunctions;
-    _k.s = () => _k.settings;
-
     _k.vh = () => parseFloat(_k.view.hlookat);
     _k.vv = () => parseFloat(_k.view.vlookat);
     _k.vf = () => parseFloat(_k.view.fov);
@@ -147,27 +148,27 @@
 
     const documentURL = new URL(location);
 
-    const tourName = documentURL.searchParams.get('tour');
-    const remoteFolder = documentURL.searchParams.get('folder');
+    const tourName = documentURL.searchParams.get('tour') ?? tourOverride;
+    const remoteFolder = documentURL.searchParams.get('folder') ?? folderOverride;
 
     const tourFolder = remoteFolder ? remoteFolder : `${location.origin}/tours`;
     const timestamp = '?t=' + Math.round(Date.now() / 1000).toString(36);
 
-    _k.set('_location', `${tourFolder}/${tourName}/`);
-    _k.set('_timestamp', timestamp);
-    _k.set('_devmode', documentURL.searchParams.get('devmode') === '');
-    _k.set('tourTitle', tourName);
+    _k._location = `${tourFolder}/${tourName}/`;
+    _k._timestamp = timestamp;
+    _k.tour_title = tourName;
+
+    _k.is_local_dev = location.port !== '' && location.port.indexOf('517') != -1;
 
     /* ---- 5. decode payloads ---- */
 
     const appJS = _b64decode(_k.dgic('_APPJS'));
     const styles = _b64decode(_k.dgic('_STYLES'));
     const coreXML = _b64decode(_k.dgic('_CORE'));
-
     const svelteJS = _b64decode(_k.dgic('_SVELTE_JS'));
     const svelteCSS = _b64decode(_k.dgic('_SVELTE_CSS'));
 
-    const isProd = svelteJS.length > 0;
+    _k.isProd = svelteJS.length > 0;
 
     /* ---- 6. xml + svelte boot helpers ---- */
 
@@ -179,7 +180,7 @@
       appEl.id = 'app';
       krpanoEl.appendChild(appEl);
 
-      if (isProd) {
+      if (_k.isProd) {
 
         /* production: Svelte rides inside app.xml, executed with the internal
            reference + mount element passed as arguments (no window channel) */
@@ -199,12 +200,53 @@
       }
     };
 
+    _k.loadTourXML = async () => {
+
+      // krpano resolves relative tile/thumb URLs against k_app/ (where the startup
+      // app.xml lives), not the tour folder. Rewrite the tour's relative image paths
+      // (url="pano..." and thumburl="pano...") to absolute via _location before the
+      // include. _location = .../tours/<tour>/ (set in __init).
+      /* xmlAbsPaths = _k._tmp_tour_xml
+        .replaceAll('url="pano', `url="${_k._location}pano`)
+        .replaceAll('videourl="_content', `videourl="${_k._location}_content`); */
+
+      let tourXml = await fetchText(`${tourFolder}/${tourName}/tour.xml${timestamp}`);
+
+      tourXml = tourXml.replace(/^[ \t]*<include\b[^>]*>[ \t]*\r?\n?/gm, '');
+
+      await includeXMLString(tourXml);
+
+      await new Promise(resolve => {
+        slowCallwhen(
+          () => !!_k.sgi(_k.settings.start_scene),
+          () => resolve()
+        );
+      });
+
+      _k.fixSceneMediaPaths();  
+    };
+
+    _k.fixSceneMediaPaths = () => {
+
+      _k.sga().forEach(scene => {
+
+        if (scene.thumburl) {
+
+          scene.thumburl = scene.thumburl
+            .replaceAll('k_app/', _k._location);
+        }
+
+        if (scene.content) scene.content =  scene.content.replaceAll('k_app/', _k._location);
+      });
+    };
+
     /* ---- 7. ordered boot: project config -> core -> svelte -> startup -> tour ---- */
 
     (async () => {
 
       /* 7a. project config (load_order array) BEFORE the core, in order, so core
             code can read design / menu settings at parse and creation time */
+            
       const loadOrder = _k.load_order.getArray().map(item => item.ref);
 
       for (let ref of loadOrder) {
@@ -214,36 +256,37 @@
       /* 7b. core: helper JS, CSS, engine KML */
       _runGlobalJS(appJS);
       _injectCSS(styles);
+
       await includeXMLString(coreXML);
 
+      await new Promise(resolve => {
+
+        _k.action.getArray()
+        .filter(action => _k.isTrue(action.init_run_before_start))
+        .map(action => action.name)
+        .forEach(action => {
+          _k.c(`${action}(_k)`);
+        });
+
+        setTimeout(() => resolve(), 50);
+      });
+
       /* 7c. dev debug mirror (production keeps everything off window) */
-      if (!isProd) {
+      if (!_k.isProd) {
         window.krpano = _k;
         window._k = _k;
       }
 
       /* 7d. krpano-first Svelte boot */
       bootSvelte();
-
-      /* 7e. tour startup (config + core are ready) */
       
-      /* _k.c(' js( console.log(calc(action[startup0].content)); ); if(isset(startup0), startup0());'); */
+      /* 7e. load the tour content (scenes / preview) on top */
+      await _k.loadTourXML();
 
-      /* 7f. load the tour content (scenes / preview) on top */
-      _k._toururl = `${tourFolder}/${tourName}/tour.xml${timestamp}`
-      _k.c('loadpano(get(_toururl)); delete(_toururl);');
-
-      _k.action.getArray()
-      .filter(action => _k.isTrue(action.init_run_before_start))
-      .map(action => action.name)
-      .forEach(action => {
-        _k.c(`${action}(_k)`);
-      });
-
-      await wait(50);
 
       _k.c('startup0()');
 
+      _k.core_init_complete = true;
     })();
 
   ]]></action>

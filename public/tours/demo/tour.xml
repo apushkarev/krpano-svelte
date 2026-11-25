@@ -1,5 +1,11 @@
 ﻿<krpano title="Virtual Tour">
 
-	<preview type="grid(CUBE,16,16,512,0x333333,0x121314,0x000000);" />
+	<settings start_scene="scene_1" />
+
+	<scene name="scene_1">
+
+		<preview type="grid(CUBE,16,16,512,0x333333,0x121314,0x000000);" />
+
+	</scene>
 
 </krpano>

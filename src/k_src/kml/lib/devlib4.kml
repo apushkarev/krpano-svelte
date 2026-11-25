@@ -86,8 +86,8 @@
     "
 
     show_smooth_routine="
-      /* нужно заново рассчитывать название шоукола, потому что */
-      /* событие onloaded может сработать позже, чем будет вызван метод show */
+      /* need to calculate show call name earlier */
+      /* because onloaded event can trigger later than show method is called */
       delayedcall(calc(name + '_show_call'), get(show_delay),
 
         set(visible, true);
@@ -99,6 +99,7 @@
         tween(alpha, get(target_alpha), get(tween_duration_show), get(tween_type),
 
           set(is_showing, false);
+
           show_after();
         );
       );
@@ -195,6 +196,9 @@
     visible="true" alpha="1"
 
     onloaded.addevent="
+      onloaded_additional();
+    "
+    onloaded_additional="
       copy(alpha, target_alpha);
     "
   />  
@@ -212,7 +216,6 @@
       }
     }
 
-
     if (caller) {
       krpano.call(`
         copy(parent, ${caller._type}[${caller.name}]);
@@ -226,6 +229,10 @@
   <action name="invoke" type="javascript"><![CDATA[
 
     const [f, funcName, ...params] = args;
+
+    if (!_k[funcName]) {
+      console.log('function not found for invoke', {funcName}, _k[funcName]);
+    }
 
     _k[funcName].apply(_k, args.slice(2));
 

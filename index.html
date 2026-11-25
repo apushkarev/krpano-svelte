@@ -17,7 +17,6 @@
 
     <script type="text/javascript" src="k_app/js/tour_loader.js"></script>
     <script type="text/javascript" src="js/bundler/xml2json.min.js"></script>
-    <script type="text/javascript" src="js/bundler/vkbeautify.js"></script>
     <link rel="stylesheet" href="fonts.css" />
   </head>
   <body>
@@ -29,6 +28,10 @@
     <script type="module" src="/src/main.js"></script>
 
     <script>
+
+      window.tourOverride = '';
+      window.folderOverride = '';
+
       document.addEventListener('DOMContentLoaded', () => loadTour());
     </script>
 

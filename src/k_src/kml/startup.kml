@@ -4,14 +4,10 @@
 	
 	<action name="startup0" init_run_before_start="false">
 	
-		/* Надо для работы тура */
-		
-		/* делает нормальную консоль */
 		if (device.desktop,
 			invoke('setKRPanoConsole');
 		);
 
-		/* парсит урл */
 		invoke('readURL');
 
 		delayedcall (0.5,
@@ -19,6 +15,8 @@
 		);
 
 		menu.create_items();
+
+		load_scene(get(settings.start_scene));
 		
 	</action>
 	
